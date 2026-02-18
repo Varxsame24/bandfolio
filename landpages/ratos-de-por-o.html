@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ratos de Porão - BandFolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Variáveis de Tema */
+        :root { 
+            --bg: #F9FAFB; 
+            --text: #1F2937; 
+            --accent: #111827; 
+            
+            /* Novas Variáveis para o Banner/Hero */
+            --hero-text: #111827;       /* Escuro no modo claro */
+            --hero-meta: #4B5563;       /* Cinza escuro no modo claro */
+            --hero-shadow: none;        /* Sem sombra pesada no modo claro */
+            
+            --btn-outline-color: #111827; 
+            --btn-outline-border: rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode {
+            --bg: #0f0f0f; 
+            --text: #f0f0f0; 
+            --accent: #e8824e; 
+            
+            /* Ajustes para o Banner/Hero no Dark Mode */
+            --hero-text: #ffffff;
+            --hero-meta: rgba(255,255,255,0.8);
+            --hero-shadow: 0 2px 10px rgba(0,0,0,0.5);
+
+            --btn-outline-color: white; 
+            --btn-outline-border: rgba(255,255,255,0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 50px; transition: background 0.3s, color 0.3s; }
+        
+        nav { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 800; font-size: 1.2rem; color: var(--text); text-decoration: none; }
+        .back-btn { color: var(--text); opacity: 0.7; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        .back-btn:hover { color: var(--accent); opacity: 1; }
+
+        .hero { 
+            height: 60vh; position: relative; display: flex; align-items: flex-end; padding: 4rem;
+            /* Degradê que vai para a cor de fundo atual (Preto ou Branco) */
+            background: linear-gradient(to top, var(--bg) 5%, transparent), url('../images/ratosdeporao.jpg') no-repeat center 23.0% / cover;
+        }
+        .hero-content { max-width: 800px; z-index: 2; }
+        
+        /* Uso das novas variáveis de cor no Título e Meta */
+        h1 { 
+            font-size: 4rem; line-height: 1; margin-bottom: 10px; text-transform: uppercase; 
+            color: var(--hero-text); 
+            text-shadow: var(--hero-shadow);
+        }
+        .meta { 
+            display: flex; gap: 20px; font-size: 1.1rem; margin-bottom: 20px; 
+            color: var(--hero-meta);
+            text-shadow: var(--hero-shadow);
+        }
+        
+        .actions { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;}
+        .btn { padding: 12px 25px; border-radius: 50px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 1rem;}
+        
+        .btn-primary { background: var(--accent); color: var(--bg); } /* Texto inverte com o fundo */
+        .btn-primary:hover { transform: scale(1.05); }
+        
+        .btn-outline { 
+            background: rgba(125,125,125,0.1); 
+            color: var(--btn-outline-color); 
+            border: 1px solid var(--btn-outline-border); 
+            backdrop-filter: blur(5px);
+        }
+        .btn-outline:hover { background: rgba(125,125,125,0.3); }
+        
+        .btn-like.liked { background: #e84e4e; color: white; border-color: #e84e4e; }
+        .btn-like.liked:hover { background: #c93b3b; }
+
+        .content { max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; font-size: 1.1rem; color: var(--text); opacity: 0.9; }
+        
+        @media(max-width: 768px) { .hero { padding: 2rem; height: 50vh; } h1 { font-size: 2.5rem; } }
+    </style>
+</head>
+<body>
+    <script>
+        const storedTheme = localStorage.getItem('bandfolio_theme');
+        if (storedTheme === 'dark') { document.body.classList.add('dark-mode'); }
+    </script>
+
+    <nav>
+        <a href="../index.html" class="logo">BandFolio.</a>
+        <a href="../index.html" class="back-btn">← Voltar para Galeria</a>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Ratos de Porão</h1>
+            <div class="meta">
+                <span>Punk Rock</span>
+                <span>•</span>
+                <span>São Paulo</span>
+            </div>
+            <div class="actions">
+                <a href="https://rdpeido.com.br/" target="_blank" class="btn btn-primary">🌐 Visitar Site</a>
+                
+                <button class="btn btn-outline btn-like" onclick="handleLike()" id="likeBtn">
+                    <span id="likeIcon">♥</span> <span id="likeCount">...</span>
+                </button>
+
+                <button class="btn btn-outline" onclick="sharePage()">🔗 Compartilhar</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="content">
+        <h3>Sobre</h3>
+        <p>Ratos de Porão é uma banda brasileira de punk rock formada em novembro de 1981, durante a explosão do movimento punk paulista. Com mais de 40 anos de carreira, são referência brasileira do gênero e reconhecidos internacionalmente, em particular, na Europa, América Latina e América do Norte.</p>
+    </section>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        
+            const firebaseConfig = {
+              apiKey: "AIzaSyDrThMwRTXl6b4oY5zqxDtKcTj8J9VrlnE",
+              authDomain: "bandfolio-13d13.firebaseapp.com",
+              databaseURL: "https://bandfolio-13d13-default-rtdb.firebaseio.com",
+              projectId: "bandfolio-13d13",
+              storageBucket: "bandfolio-13d13.firebasestorage.app",
+              messagingSenderId: "494920789757",
+              appId: "1:494920789757:web:f23620af56c4fbbd909894"
+            };
+            
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        const BAND_ID = 1771382454721;
+        const likeBtn = document.getElementById('likeBtn');
+        const likeCountSpan = document.getElementById('likeCount');
+        const likeIcon = document.getElementById('likeIcon');
+        
+        const storageKey = 'has_liked_' + BAND_ID;
+        let hasLiked = localStorage.getItem(storageKey) === 'true';
+        const likesRef = db.ref('likes/' + BAND_ID);
+        
+        likesRef.on('value', (snapshot) => {
+            const val = snapshot.val() || 0;
+            likeCountSpan.innerText = val + (val === 1 ? ' Like' : ' Likes');
+        });
+
+        if(hasLiked) {
+            likeBtn.classList.add('liked');
+            likeIcon.innerText = '♥';
+        } else {
+            likeIcon.innerText = '♡';
+        }
+
+        function handleLike() {
+            const isAdding = !hasLiked;
+            likesRef.transaction((currentLikes) => {
+                const safeCurrent = currentLikes || 0;
+                if (isAdding) return safeCurrent + 1;
+                else return (safeCurrent - 1 < 0) ? 0 : safeCurrent - 1;
+            }, (error, committed) => {
+                if (committed) {
+                    hasLiked = isAdding;
+                    if (hasLiked) {
+                        localStorage.setItem(storageKey, 'true');
+                        likeBtn.classList.add('liked');
+                        likeIcon.innerText = '♥';
+                    } else {
+                        localStorage.removeItem(storageKey);
+                        likeBtn.classList.remove('liked');
+                        likeIcon.innerText = '♡';
+                    }
+                }
+            });
+        }
+
+        function sharePage() {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copiado!');
+        }
+    </script>
+</body>
+</html>

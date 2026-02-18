@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BandFolio | Admin Panel</title>
+    <style>
+        :root {
+            --bg-body: #1e1e1e;
+            --bg-panel: #252525;
+            --text-main: #e0e0e0;
+            --accent: #e8824e;
+            --border: #333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body { background-color: var(--bg-body); color: var(--text-main); display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+
+        /* Sidebar */
+        aside { background-color: var(--bg-panel); border-right: 1px solid var(--border); padding: 2rem; display: flex; flex-direction: column; gap: 1rem; }
+        aside h2 { color: var(--accent); margin-bottom: 2rem; }
+        .nav-btn { background: none; border: none; color: #888; text-align: left; padding: 10px; cursor: pointer; font-size: 1rem; border-radius: 5px; }
+        .nav-btn:hover, .nav-btn.active { background: rgba(232, 130, 78, 0.1); color: var(--accent); }
+        .back-link { margin-top: auto; color: #888; text-decoration: none; font-size: 0.9rem; }
+        .back-link:hover { color: white; }
+
+        /* Main Area */
+        main { padding: 3rem; overflow-y: auto; }
+        h1 { margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+
+        /* Form Container */
+        .form-container {
+            background-color: var(--bg-panel); padding: 2rem; border-radius: 12px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 3rem;
+            border: 1px solid var(--border);
+        }
+
+        .full-width { grid-column: span 2; }
+        
+        .input-group label { display: block; margin-bottom: 0.5rem; color: #aaa; font-size: 0.9rem; }
+        .input-group input[type="text"], .input-group textarea {
+            width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--border);
+            background: #1a1a1a; color: white; outline: none;
+        }
+        .input-group textarea { resize: vertical; height: 100px; }
+        
+        /* File Input */
+        .file-input-wrapper { display: flex; gap: 10px; }
+        .file-select-btn { background: #444; color: white; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; font-size: 0.9rem; white-space: nowrap; }
+        .file-select-btn:hover { background: #555; }
+
+        /* --- DRAG BANNER EDITOR --- */
+        .banner-editor {
+            width: 100%;
+            height: 200px;
+            background-color: #000;
+            border: 2px dashed #444;
+            border-radius: 8px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+            cursor: ns-resize;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center 50%;
+        }
+        
+        .banner-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+        
+        .banner-overlay span {
+            background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem;
+        }
+
+        /* Tags */
+        .tags-group { display: flex; gap: 15px; margin-top: 10px; }
+        .tag-option { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+
+        /* Buttons */
+        .btn { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-primary { background-color: var(--accent); color: white; }
+        .btn-secondary { background-color: #444; color: white; margin-right: 10px; }
+        .btn-download { background-color: #28a745; color: white; }
+        .btn-html { background-color: #007bff; color: white; font-size: 0.8rem; padding: 5px 10px; margin-left: 5px;}
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { text-align: left; color: #888; padding: 1rem; border-bottom: 1px solid var(--border); }
+        td { padding: 1rem; border-bottom: 1px solid #333; }
+        .preview-img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 10px; vertical-align: middle; }
+        
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-right: 10px; color: #888; }
+        .action-btn:hover { color: white; }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <h2>BandFolio Admin</h2>
+        <button class="nav-btn active">Gerenciar Bandas</button>
+        <button class="nav-btn btn-download" onclick="downloadJSFile()">⬇ Baixar data.js Atualizado</button>
+        <button class="nav-btn" onclick="resetData()">⚠ Resetar Tudo</button>
+        <a href="index.html" class="back-link">← Voltar ao Site</a>
+    </aside>
+
+    <main>
+        <h1>
+            Gerenciador de Itens
+            <button class="btn btn-primary" onclick="clearForm()">+ Novo Item</button>
+        </h1>
+
+        <div class="form-container" id="bandForm">
+            <input type="hidden" id="editIndex">
+            
+            <div class="input-group">
+                <label>Nome da Banda</label>
+                <input type="text" id="name" placeholder="Ex: Arctic Monkeys">
+            </div>
+
+            <div class="input-group">
+                <label>Cidade</label>
+                <input type="text" id="city" placeholder="Ex: Aracaju">
+            </div>
+
+            <div class="input-group">
+                <label>Gênero</label>
+                <input type="text" id="genre" placeholder="Ex: Indie Rock">
+            </div>
+
+            <div class="input-group">
+                <label>Link do Portfólio (Externo)</label>
+                <input type="text" id="portfolioUrl" placeholder="https://site-da-banda.com">
+            </div>
+
+            <div class="input-group full-width">
+                <label>Descrição da Banda (Para a Landpage)</label>
+                <textarea id="description" placeholder="Escreva um breve resumo sobre a banda, influências e história..."></textarea>
+            </div>
+
+            <div class="input-group full-width">
+                <label>Imagem da Capa (Ajuste a posição abaixo)</label>
+                <div class="file-input-wrapper">
+                    <input type="text" id="image" placeholder="./images/sua-foto.jpg" oninput="updateBannerPreview()">
+                    <input type="file" id="filePicker" style="display: none;" accept="image/*" onchange="handleFileSelect(this)">
+                    <button class="file-select-btn" onclick="document.getElementById('filePicker').click()">📂 Escolher Arquivo</button>
+                </div>
+                
+                <div class="banner-editor" id="bannerPreview" onmousedown="startDrag(event)">
+                    <div class="banner-overlay">
+                        <span>↕ Clique e arraste para ajustar a posição</span>
+                    </div>
+                </div>
+                <input type="hidden" id="positionY" value="50">
+            </div>
+
+            <div class="input-group full-width">
+                <label>Classificações</label>
+                <div class="tags-group">
+                    <label class="tag-option"><input type="checkbox" value="new"> Lançamento</label>
+                    <label class="tag-option"><input type="checkbox" value="hot"> Recomendado</label>
+                    <label class="tag-option"><input type="checkbox" value="classic"> Clássico</label>
+                </div>
+            </div>
+
+            <div class="full-width" style="text-align: right;">
+                <button class="btn btn-secondary" onclick="clearForm()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveBand()">Salvar Item</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Capa</th>
+                    <th>Banda / Cidade</th>
+                    <th>Landpage</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </main>
+
+    <script src="data.js"></script> 
+    
+    <script>
+        let currentData = JSON.parse(localStorage.getItem('bandfolioData')) || bandsDB;
+
+        // --- LÓGICA DE ARRASTAR O BANNER ---
+        let isDragging = false;
+        let startY = 0;
+        let currentY = 50; 
+        const bannerEl = document.getElementById('bannerPreview');
+        const posInput = document.getElementById('positionY');
+
+        function startDrag(e) {
+            isDragging = true;
+            startY = e.clientY;
+            currentY = parseFloat(posInput.value) || 50;
+            bannerEl.style.cursor = 'grabbing';
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function onDrag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            const deltaY = e.clientY - startY;
+            const sensitivity = 0.5;
+            let newPos = currentY - (deltaY * sensitivity);
+            if (newPos < 0) newPos = 0;
+            if (newPos > 100) newPos = 100;
+            bannerEl.style.backgroundPosition = `center ${newPos}%`;
+            posInput.value = newPos.toFixed(1);
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            bannerEl.style.cursor = 'ns-resize';
+            currentY = parseFloat(posInput.value); 
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        function updateBannerPreview() {
+            const url = document.getElementById('image').value;
+            const pos = document.getElementById('positionY').value || 50;
+            if (url) {
+                bannerEl.style.backgroundImage = `url('${url}')`;
+                bannerEl.style.backgroundPosition = `center ${pos}%`;
+            } else {
+                bannerEl.style.backgroundImage = 'none';
+            }
+        }
+
+        // --- TEMPLATE DA LANDPAGE CORRIGIDO ---
+        const getLandpageTemplate = (band) => {
+            const imagePath = band.image.replace('./', '../');
+            const bgPosition = band.positionY ? `center ${band.positionY}%` : 'center center';
+            
+            const firebaseConfigString = `
+            const firebaseConfig = {
+              apiKey: "AIzaSyDrThMwRTXl6b4oY5zqxDtKcTj8J9VrlnE",
+              authDomain: "bandfolio-13d13.firebaseapp.com",
+              databaseURL: "https://bandfolio-13d13-default-rtdb.firebaseio.com",
+              projectId: "bandfolio-13d13",
+              storageBucket: "bandfolio-13d13.firebasestorage.app",
+              messagingSenderId: "494920789757",
+              appId: "1:494920789757:web:f23620af56c4fbbd909894"
+            };
+            `;
+
+            return `<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${band.name} - BandFolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Variáveis de Tema */
+        :root { 
+            --bg: #F9FAFB; 
+            --text: #1F2937; 
+            --accent: #111827; 
+            
+            /* Novas Variáveis para o Banner/Hero */
+            --hero-text: #111827;       /* Escuro no modo claro */
+            --hero-meta: #4B5563;       /* Cinza escuro no modo claro */
+            --hero-shadow: none;        /* Sem sombra pesada no modo claro */
+            
+            --btn-outline-color: #111827; 
+            --btn-outline-border: rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode {
+            --bg: #0f0f0f; 
+            --text: #f0f0f0; 
+            --accent: #e8824e; 
+            
+            /* Ajustes para o Banner/Hero no Dark Mode */
+            --hero-text: #ffffff;
+            --hero-meta: rgba(255,255,255,0.8);
+            --hero-shadow: 0 2px 10px rgba(0,0,0,0.5);
+
+            --btn-outline-color: white; 
+            --btn-outline-border: rgba(255,255,255,0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 50px; transition: background 0.3s, color 0.3s; }
+        
+        nav { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 800; font-size: 1.2rem; color: var(--text); text-decoration: none; }
+        .back-btn { color: var(--text); opacity: 0.7; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        .back-btn:hover { color: var(--accent); opacity: 1; }
+
+        .hero { 
+            height: 60vh; position: relative; display: flex; align-items: flex-end; padding: 4rem;
+            /* Degradê que vai para a cor de fundo atual (Preto ou Branco) */
+            background: linear-gradient(to top, var(--bg) 5%, transparent), url('${imagePath}') no-repeat ${bgPosition} / cover;
+        }
+        .hero-content { max-width: 800px; z-index: 2; }
+        
+        /* Uso das novas variáveis de cor no Título e Meta */
+        h1 { 
+            font-size: 4rem; line-height: 1; margin-bottom: 10px; text-transform: uppercase; 
+            color: var(--hero-text); 
+            text-shadow: var(--hero-shadow);
+        }
+        .meta { 
+            display: flex; gap: 20px; font-size: 1.1rem; margin-bottom: 20px; 
+            color: var(--hero-meta);
+            text-shadow: var(--hero-shadow);
+        }
+        
+        .actions { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;}
+        .btn { padding: 12px 25px; border-radius: 50px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 1rem;}
+        
+        .btn-primary { background: var(--accent); color: var(--bg); } /* Texto inverte com o fundo */
+        .btn-primary:hover { transform: scale(1.05); }
+        
+        .btn-outline { 
+            background: rgba(125,125,125,0.1); 
+            color: var(--btn-outline-color); 
+            border: 1px solid var(--btn-outline-border); 
+            backdrop-filter: blur(5px);
+        }
+        .btn-outline:hover { background: rgba(125,125,125,0.3); }
+        
+        .btn-like.liked { background: #e84e4e; color: white; border-color: #e84e4e; }
+        .btn-like.liked:hover { background: #c93b3b; }
+
+        .content { max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; font-size: 1.1rem; color: var(--text); opacity: 0.9; }
+        
+        @media(max-width: 768px) { .hero { padding: 2rem; height: 50vh; } h1 { font-size: 2.5rem; } }
+    </style>
+</head>
+<body>
+    <script>
+        const storedTheme = localStorage.getItem('bandfolio_theme');
+        if (storedTheme === 'dark') { document.body.classList.add('dark-mode'); }
+    <\/script>
+
+    <nav>
+        <a href="../index.html" class="logo">BandFolio.</a>
+        <a href="../index.html" class="back-btn">← Voltar para Galeria</a>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>${band.name}</h1>
+            <div class="meta">
+                <span>${band.genre}</span>
+                <span>•</span>
+                <span>${band.city}</span>
+            </div>
+            <div class="actions">
+                <a href="${band.portfolioUrl}" target="_blank" class="btn btn-primary">🌐 Visitar Site</a>
+                
+                <button class="btn btn-outline btn-like" onclick="handleLike()" id="likeBtn">
+                    <span id="likeIcon">♥</span> <span id="likeCount">...</span>
+                </button>
+
+                <button class="btn btn-outline" onclick="sharePage()">🔗 Compartilhar</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="content">
+        <h3>Sobre</h3>
+        <p>${band.description ? band.description.replace(/\n/g, '<br>') : 'Sem descrição disponível.'}</p>
+    </section>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"><\/script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"><\/script>
+
+    <script>
+        ${firebaseConfigString}
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        const BAND_ID = ${band.id};
+        const likeBtn = document.getElementById('likeBtn');
+        const likeCountSpan = document.getElementById('likeCount');
+        const likeIcon = document.getElementById('likeIcon');
+        
+        const storageKey = 'has_liked_' + BAND_ID;
+        let hasLiked = localStorage.getItem(storageKey) === 'true';
+        const likesRef = db.ref('likes/' + BAND_ID);
+        
+        likesRef.on('value', (snapshot) => {
+            const val = snapshot.val() || 0;
+            likeCountSpan.innerText = val + (val === 1 ? ' Like' : ' Likes');
+        });
+
+        if(hasLiked) {
+            likeBtn.classList.add('liked');
+            likeIcon.innerText = '♥';
+        } else {
+            likeIcon.innerText = '♡';
+        }
+
+        function handleLike() {
+            const isAdding = !hasLiked;
+            likesRef.transaction((currentLikes) => {
+                const safeCurrent = currentLikes || 0;
+                if (isAdding) return safeCurrent + 1;
+                else return (safeCurrent - 1 < 0) ? 0 : safeCurrent - 1;
+            }, (error, committed) => {
+                if (committed) {
+                    hasLiked = isAdding;
+                    if (hasLiked) {
+                        localStorage.setItem(storageKey, 'true');
+                        likeBtn.classList.add('liked');
+                        likeIcon.innerText = '♥';
+                    } else {
+                        localStorage.removeItem(storageKey);
+                        likeBtn.classList.remove('liked');
+                        likeIcon.innerText = '♡';
+                    }
+                }
+            });
+        }
+
+        function sharePage() {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copiado!');
+        }
+    <\/script>
+</body>
+</html>`;
+        };
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const path = `./images/${input.files[0].name}`;
+                document.getElementById('image').value = path;
+                updateBannerPreview();
+            }
+        }
+
+        function downloadJSFile() {
+            const fileContent = `/* Arquivo gerado pelo Admin Panel */\n\nconst bandsDB = ${JSON.stringify(currentData, null, 4)};`;
+            const blob = new Blob([fileContent], { type: "text/javascript" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "data.js";
+            link.click();
+        }
+
+        function downloadLandpage(index) {
+            const band = currentData[index];
+            const htmlContent = getLandpageTemplate(band);
+            const slug = band.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+            const blob = new Blob([htmlContent], { type: "text/html" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `${slug}.html`;
+            link.click();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            currentData.forEach((band, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><img src="${band.image}" class="preview-img" onerror="this.src='https://placehold.co/40?text=?'"></td>
+                    <td>
+                        <strong>${band.name}</strong><br>
+                        <span style="font-size:0.8rem; color:#888">${band.city}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-html" onclick="downloadLandpage(${index})">⬇ Baixar HTML</button>
+                    </td>
+                    <td>
+                        <button class="action-btn" onclick="editBand(${index})">✎</button>
+                        <button class="action-btn" style="color:#ff4d4d" onclick="deleteBand(${index})">🗑</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function saveBand() {
+            const name = document.getElementById('name').value;
+            const city = document.getElementById('city').value;
+            const genre = document.getElementById('genre').value;
+            const portfolioUrl = document.getElementById('portfolioUrl').value;
+            const description = document.getElementById('description').value;
+            const image = document.getElementById('image').value;
+            const positionY = document.getElementById('positionY').value || "50";
+            const index = document.getElementById('editIndex').value;
+            
+            if(!name) return alert("Nome é obrigatório!");
+
+            const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+            const landpageUrl = `./landpages/${slug}.html`;
+
+            const tags = [];
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(box => tags.push(box.value));
+
+            const newBand = { 
+                id: Date.now(), name, city, genre, url: landpageUrl, portfolioUrl, description, image, positionY, tags 
+            };
+
+            if (index === "") {
+                currentData.unshift(newBand);
+                setTimeout(() => {
+                    if(confirm(`Item criado! Deseja baixar o arquivo ${slug}.html agora?`)) {
+                        downloadLandpage(0);
+                    }
+                }, 100);
+            } else {
+                newBand.id = currentData[index].id;
+                currentData[index] = newBand;
+            }
+
+            saveToStorage();
+            renderTable();
+            clearForm();
+        }
+
+        function editBand(index) {
+            const band = currentData[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('name').value = band.name;
+            document.getElementById('city').value = band.city || "";
+            document.getElementById('genre').value = band.genre;
+            document.getElementById('portfolioUrl').value = band.portfolioUrl || band.url; 
+            document.getElementById('description').value = band.description || "";
+            document.getElementById('image').value = band.image;
+            document.getElementById('positionY').value = band.positionY || 50;
+            updateBannerPreview();
+
+            document.querySelectorAll('input[type="checkbox"]').forEach(box => {
+                box.checked = band.tags.includes(box.value);
+            });
+            document.querySelector('.btn-primary').innerText = "Atualizar";
+            window.scrollTo(0,0);
+        }
+
+        function deleteBand(index) {
+            if(confirm('Apagar item?')) {
+                currentData.splice(index, 1);
+                saveToStorage();
+                renderTable();
+            }
+        }
+
+        function saveToStorage() { localStorage.setItem('bandfolioData', JSON.stringify(currentData)); }
+        function clearForm() {
+            document.getElementById('editIndex').value = "";
+            document.getElementById('name').value = "";
+            document.getElementById('city').value = "";
+            document.getElementById('genre').value = "";
+            document.getElementById('portfolioUrl').value = "";
+            document.getElementById('description').value = "";
+            document.getElementById('image').value = "";
+            document.getElementById('positionY').value = "50";
+            updateBannerPreview();
+            document.querySelectorAll('input[type="checkbox"]').forEach(b => b.checked = false);
+            document.querySelector('.btn-primary').innerText = "+ Novo Item";
+        }
+        function resetData() {
+            if(confirm("Voltar ao padrão original?")) { localStorage.removeItem('bandfolioData'); location.reload(); }
+        }
+        renderTable();
+    </script>
+</body>
+</html>

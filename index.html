@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BandFolio | Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Cores Light Mode */
+            --bg-body: #ffffff;
+            --bg-header: #ffffff;
+            --bg-sidebar: #f8f8f8;
+            --text-main: #111;
+            --text-muted: #666;
+            --accent: #000;
+            --border: #e5e5e5;
+            
+            /* Design System "Serious" */
+            --radius: 2px;
+            --transition: all 0.2s ease-out;
+            --font-main: 'Inter', sans-serif;
+            --fade-gradient: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
+        }
+
+        body.dark-mode {
+            /* Cores Dark Mode */
+            --bg-body: #121212;
+            --bg-header: #121212;
+            --bg-sidebar: #0a0a0a;
+            --text-main: #ededed;
+            --text-muted: #888;
+            --accent: #fff;
+            --border: #333;
+            --fade-gradient: linear-gradient(to right, rgba(18,18,18,0), rgba(18,18,18,1));
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); -webkit-font-smoothing: antialiased; }
+
+        body { 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: grid;
+            grid-template-rows: 70px 1fr; 
+            grid-template-columns: 220px 1fr;
+            transition: background-color 0.3s ease;
+            overflow: hidden;
+        }
+
+        /* --- TOP HEADER --- */
+        .top-header {
+            grid-column: 1 / -1;
+            background: var(--bg-header);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 100;
+        }
+
+        .brand { 
+            font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px; 
+            color: var(--accent); text-transform: uppercase; cursor: pointer;
+        }
+
+        .search-container {
+            flex: 1; max-width: 500px; margin: 0 40px; position: relative;
+        }
+
+        .search-container input {
+            width: 100%; padding: 10px 15px; background: var(--bg-sidebar);
+            border: 1px solid var(--border); color: var(--text-main); font-size: 0.9rem;
+            border-radius: var(--radius); outline: none; transition: var(--transition);
+        }
+        .search-container input:focus { border-color: var(--accent); background: var(--bg-body); }
+
+        .top-nav { display: flex; gap: 20px; align-items: center; }
+        .nav-link {
+            background: none; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+            color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; transition: var(--transition);
+        }
+        .nav-link:hover, .nav-link.active { color: var(--accent); }
+
+        .theme-btn {
+            background: none; border: 1px solid var(--border); color: var(--text-main);
+            width: 32px; height: 32px; border-radius: var(--radius); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: var(--transition);
+        }
+        .theme-btn:hover { background: var(--border); }
+
+        /* --- SIDEBAR --- */
+        aside { 
+            background: var(--bg-sidebar); border-right: 1px solid var(--border); 
+            padding: 40px 30px; overflow-y: auto;
+        }
+
+        .nav-label { 
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; 
+            color: var(--text-muted); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 10px;
+        }
+        .category-item { 
+            display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; 
+            cursor: pointer; transition: var(--transition); font-weight: 500;
+        }
+        .category-item:hover { color: var(--accent); padding-left: 5px; }
+
+        /* --- MAIN CONTENT --- */
+        main { padding: 40px 60px; overflow-y: auto; position: relative; overflow-x: hidden; }
+
+        .section-header { 
+            display: flex; justify-content: space-between; align-items: flex-end; 
+            margin-bottom: 1.5rem; padding-bottom: 10px;
+            border-bottom: 1px solid transparent; 
+        }
+        .section-title { 
+            font-size: 1.2rem; font-weight: 700; letter-spacing: 0.5px; 
+            color: var(--accent); text-transform: uppercase;
+        }
+        .view-all { 
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+            color: var(--text-muted); cursor: pointer; transition: var(--transition); letter-spacing: 1px;
+        }
+        .view-all:hover { color: var(--accent); }
+
+        /* --- SCROLL HORIZONTAL (NETFLIX STYLE) --- */
+        .scroll-wrapper {
+            position: relative;
+            margin-bottom: 60px;
+            /* Container relativo para posicionar as setas */
+        }
+
+        .horizontal-scroll {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            cursor: grab; /* Cursor de mãozinha */
+        }
+        
+        .horizontal-scroll.active {
+            cursor: grabbing; /* Mão fechada ao arrastar */
+            scroll-behavior: auto; /* Remove suavidade durante o arraste manual para não dar lag */
+        }
+
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+
+        .horizontal-scroll .card-wrapper {
+            flex: 0 0 240px;
+            /* Impede que o usuário selecione texto/imagem enquanto arrasta */
+            user-select: none; 
+            -webkit-user-drag: none;
+        }
+        
+        /* Previne arrastar a imagem fantasma */
+        .horizontal-scroll img { pointer-events: none; }
+
+        /* BOTÕES DE NAVEGAÇÃO (SETINHAS) */
+        .scroll-btn {
+            position: absolute;
+            top: 40%; /* Centralizado verticalmente em relação ao card */
+            transform: translateY(-50%);
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            opacity: 0; /* Invisível por padrão */
+            transition: opacity 0.3s ease, transform 0.2s;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Mostrar botões quando passar o mouse na área */
+        .scroll-wrapper:hover .scroll-btn { opacity: 1; }
+        
+        .scroll-btn:hover { background: var(--accent); transform: translateY(-50%) scale(1.1); }
+        .scroll-btn.left { left: -20px; }
+        .scroll-btn.right { right: -20px; }
+
+        /* --- LAYOUT GRID --- */
+        .section-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; margin-bottom: 60px; 
+        }
+
+        /* --- CARD STYLES --- */
+        .card-wrapper { position: relative; }
+        .card { text-decoration: none; display: block; }
+        
+        .card-cover { 
+            width: 100%; aspect-ratio: 1/1; 
+            border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; 
+            position: relative; background: #e0e0e0;
+        }
+
+        .card-img { 
+            width: 100%; height: 100%; object-fit: cover; 
+            transition: transform 0.4s ease; filter: grayscale(20%);
+        }
+        .card:hover .card-img { transform: scale(1.03); filter: grayscale(0%); }
+
+        .card-info h4 { 
+            font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin-bottom: 4px; letter-spacing: -0.3px;
+        }
+        .card-info p { 
+            font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.7rem;
+        }
+
+        .save-btn {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0, 0, 0, 0.5); color: white;
+            border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius);
+            width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1rem; transition: all 0.2s ease; z-index: 10; backdrop-filter: blur(4px);
+        }
+        .save-btn:hover, .save-btn.saved { background: var(--accent); color: var(--bg-body); border-color: var(--accent); }
+
+        @media (max-width: 768px) {
+            body { grid-template-rows: auto auto 1fr; grid-template-columns: 1fr; }
+            .top-header { flex-direction: column; padding: 20px; gap: 15px; height: auto; }
+            .search-container { margin: 0; width: 100%; max-width: none; order: 3; }
+            .brand { width: 100%; text-align: center; order: 1; margin-bottom: 10px; }
+            .top-nav { width: 100%; justify-content: center; order: 2; }
+            aside { display: none; }
+            main { padding: 20px; }
+            .horizontal-scroll .card-wrapper { flex: 0 0 180px; }
+            /* No celular, botões somem pois o touch é nativo */
+            .scroll-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="top-header">
+        <div class="brand" onclick="renderHomeWithLikes()">BandFolio.</div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Pesquisar artistas, gêneros...">
+        </div>
+        <nav class="top-nav">
+            <button class="nav-link" onclick="renderHomeWithLikes()">Início</button>
+            <button class="nav-link" onclick="renderSaved()">Salvos</button>
+            <button class="theme-btn" onclick="toggleTheme()" title="Alterar Tema">◐</button>
+        </nav>
+    </header>
+
+    <aside>
+        <div class="nav-group">
+            <p class="nav-label">Gêneros</p>
+            <div id="categoryList"></div>
+        </div>
+    </aside>
+
+    <main>
+        <div id="contentArea"></div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="data.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
